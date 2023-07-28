@@ -1,0 +1,8 @@
+{
+  "name": "watermarkgenerator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/PatrykSzwiec/WatermarkGenerator.git",
+  "author": "Patryk Szwiec <patryk.szwiec@gmail.com>",
+  "license": "MIT"
+}
