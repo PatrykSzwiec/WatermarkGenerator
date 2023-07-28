@@ -4,5 +4,9 @@
   "main": "index.js",
   "repository": "https://github.com/PatrykSzwiec/WatermarkGenerator.git",
   "author": "Patryk Szwiec <patryk.szwiec@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "6.5.0",
+    "jimp": "0.6.4"
+  }
 }
