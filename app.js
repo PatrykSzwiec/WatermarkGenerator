@@ -93,6 +93,7 @@ const startApp = async () => {
     options.watermarkText = text.value;
     addTextWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), options.watermarkText);
     process.stdout.write('Text Watermark added');
+    startApp();
   }
   else {
     const image = await inquirer.prompt([{
@@ -105,6 +106,7 @@ const startApp = async () => {
     options.watermarkImage = image.filename;
     addImageWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), './img/' + options.watermarkImage);
     process.stdout.write('Image Watermark added');
+    startApp();
   }
 
 }
