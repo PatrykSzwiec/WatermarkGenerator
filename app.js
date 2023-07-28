@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 
 
-
+// FUNCTION WHICH AFFECT ON IMAGE
 const addTextWatermarkToImage = async function(inputFile, outputFile, text) {
    // Check if the source file exists
   const image = await Jimp.read(inputFile);
@@ -31,6 +31,31 @@ const addImageWatermarkToImage = async function(inputFile, outputFile, watermark
   await image.quality(100).writeAsync(outputFile);
 };
 
+const addInvertToImage = async function(inputFile, outputFile){
+  const image = await Jimp.read(inputFile);
+  image.invert();
+  await image.quality(100).writeAsync(outputFile);
+}
+
+const addGreyScaleToImage = async function(inputFile, outputFile){
+  const image = await Jimp.read(inputFile);
+  image.greyscale();
+  await image.quality(100).writeAsync(outputFile);
+}
+
+const addContrastToImage = async function(inputFile, outputFile, value){
+  const image = await Jimp.read(inputFile);
+  image.contrast(value);
+  await image.quality(100).writeAsync(outputFile);
+}
+
+const addBrighnessToImage = async function(inputFile, outputFile, value){
+  const image = await Jimp.read(inputFile);
+  image.brightness(value);
+  await image.quality(100).writeAsync(outputFile);
+}
+
+// VALIDATE FILES
 const validateSourceFileName = (filename) => {
   if (fs.existsSync('./img/' + filename)) {
     return true;
@@ -47,13 +72,15 @@ const validateWatermarkFileName = (filename) => {
   return false;
 };
 
+// PREPARE OutPutFileName
 const prepareOutputFilename = (filename) => {
   const [ name, ext ] = filename.split('.');
   return `${name}-with-watermark.${ext}`;
 };
 
+/* ---- APPLICATION ---- */
 const startApp = async () => {
-
+  console.log('\n');
   // Ask if user is ready
   const answer = await inquirer.prompt([{
       name: 'start',
@@ -78,12 +105,6 @@ const startApp = async () => {
     choices: ['Text watermark', 'Image watermark'],
   }]);
 
-  // Check if the input file exists (after the user provides the filename)
-  if (!fs.existsSync('./img/' + options.inputImage)) {
-    process.stdout.write('\nSomething went wrong... Try again.\n');
-    return;
-  }
-
   if(options.watermarkType === 'Text watermark') {
     const text = await inquirer.prompt([{
       name: 'value',
@@ -93,7 +114,6 @@ const startApp = async () => {
     options.watermarkText = text.value;
     addTextWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), options.watermarkText);
     process.stdout.write('Text Watermark added');
-    startApp();
   }
   else {
     const image = await inquirer.prompt([{
@@ -106,9 +126,79 @@ const startApp = async () => {
     options.watermarkImage = image.filename;
     addImageWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), './img/' + options.watermarkImage);
     process.stdout.write('Image Watermark added');
-    startApp();
   }
 
+  //Other editing
+  console.log('\n');
+  const editAnswer = await inquirer.prompt([{
+    name: 'start',
+    message: 'Do you want to make more edit to photo?',
+    type: 'confirm',
+  }]);
+
+  if (!editAnswer.start) {
+    startApp();
+  } else {
+    const editOptions = await inquirer.prompt([{
+      name: 'editType',
+      type: 'list',
+      choices: ['Make Image Brighter', 'Increase Contrast', 'Make image B&W', 'Invert image'],
+    }]);
+
+
+    if(editOptions.editType === 'Make Image Brighter'){
+      const editValue = await inquirer.prompt([{
+        name: 'value',
+        type: 'input',
+        message: 'Type your between -1 to +1 (ex. 0.25) :',
+      }]);
+
+      const brighnessValue = parseFloat(editValue.value);
+
+      // Validate if the user entered a valid number between -1 and +1
+      if (isNaN(brighnessValue) || brighnessValue < -1 || brighnessValue > 1) {
+        console.log('Invalid brighness value. Please enter a number between -1 to +1.');
+        return;
+      }
+
+      await addBrighnessToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), brighnessValue);
+      process.stdout.write('Contrast added to image');
+    }
+    else if (editOptions.editType === 'Increase Contrast'){
+      const editValue = await inquirer.prompt([{
+        name: 'value',
+        type: 'input',
+        message: 'Type your between -1 to +1 (ex. 0.25) :',
+      }]);
+
+      const contrastValue = parseFloat(editValue.value);
+
+      // Validate if the user entered a valid number between -1 and +1
+      if (isNaN(contrastValue) || contrastValue < -1 || contrastValue > 1) {
+        console.log('Invalid contrast value. Please enter a number between -1 to +1.');
+        return;
+      }
+
+      await addContrastToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), contrastValue);
+      process.stdout.write('Contrast added to image');
+    }
+    else if (editOptions.editType === 'Make image B&W'){
+      await addGreyScaleToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage));
+      process.stdout.write('Greyscale added to image');
+    }
+    else if (editOptions.editType === 'Invert image'){
+      await addInvertToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage));
+      process.stdout.write('Invert added to image');
+    }
+  }
 }
 
 startApp();
+/*
+image.brightness( val );          // adjust the brighness by a value -1 to +1
+image.contrast( val );            // adjust the contrast by a value -1 to +1
+image.greyscale();                // remove colour from the image
+image.invert();                   // invert the image colours
+
+
+*/
